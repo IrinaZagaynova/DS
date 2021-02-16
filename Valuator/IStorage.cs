@@ -6,6 +6,6 @@ namespace Valuator
     {
         void Store(string key, string value);
         string Load(string key);
-        Dictionary<string, string> LoadAll();
+        HashSet<string> GetKeys();
     }
 }

@@ -60,11 +60,11 @@ namespace Valuator.Pages
 
         private int GetSimilarity(string text)
         {
-            Dictionary<string, string> data = _storage.LoadAll();
+            HashSet<string> keys = _storage.GetKeys();
 
-            foreach (var item in data)
+            foreach (var key in keys)
             {
-                if (item.Key.Substring(0, 4) == "TEXT-" && item.Value == text)
+                if (key.Substring(0, 5) == "TEXT-" && _storage.Load(key) == text)
                 {
                     return 1;
                 }

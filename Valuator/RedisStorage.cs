@@ -27,16 +27,15 @@ namespace Valuator
             return db.StringGet(key);
         }
 
-        public Dictionary<string, string> LoadAll()
+        public HashSet<string> GetKeys()
         {
-            Dictionary<string, string> data = new Dictionary<string, string>();
+            HashSet<string> data = new HashSet<string>();
 
             var keys = _connectionMultiplexer.GetServer("localhost:6379").Keys();
 
             foreach (var item in keys)
             {
-                string key = item.ToString();
-                data.Add(key, Load(key));
+                data.Add(item.ToString());
             }
 
             return data;
