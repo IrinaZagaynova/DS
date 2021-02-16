@@ -27,9 +27,9 @@ namespace Valuator
             return db.StringGet(key);
         }
 
-        public HashSet<string> GetKeys()
+        public List<string> GetKeys()
         {
-            HashSet<string> data = new HashSet<string>();
+            List<string> data = new List<string>();
 
             var keys = _connectionMultiplexer.GetServer("localhost:6379").Keys();
 

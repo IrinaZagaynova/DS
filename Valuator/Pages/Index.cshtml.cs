@@ -25,6 +25,11 @@ namespace Valuator.Pages
 
         public IActionResult OnPost(string text)
         {
+            if (string.IsNullOrEmpty(text))
+            {
+                return Redirect("/");
+            }
+
             _logger.LogDebug(text);
 
             string id = Guid.NewGuid().ToString();   
@@ -46,13 +51,8 @@ namespace Valuator.Pages
             return Redirect($"summary?id={id}");
         }
 
-        private static double GetRank(string text)
+        private double GetRank(string text)
         {
-            if (string.IsNullOrEmpty(text))
-            {
-                return 0;
-            }
-
             int lettersCount = text.Count(char.IsLetter);
 
             return Math.Round(((text.Length - lettersCount) / (double)text.Length), 3);
@@ -60,7 +60,7 @@ namespace Valuator.Pages
 
         private int GetSimilarity(string text)
         {
-            HashSet<string> keys = _storage.GetKeys();
+            List<string> keys = _storage.GetKeys();
 
             foreach (var key in keys)
             {
