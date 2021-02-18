@@ -20,7 +20,7 @@ namespace Valuator.Pages
         }
 
         public double Rank { get; set; }
-        public int Similarity { get; set; }
+        public double Similarity { get; set; }
 
         public void OnGet(string id)
         {           
@@ -30,7 +30,7 @@ namespace Valuator.Pages
             Rank = Convert.ToDouble(_storage.Load(rankKey));
 
             string similarityKey = "SIMILARITY-" + id;
-            Similarity = Convert.ToInt32(_storage.Load(similarityKey));
+            Similarity = Convert.ToDouble(_storage.Load(similarityKey));
         }
     }
 }

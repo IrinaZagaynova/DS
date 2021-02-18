@@ -40,37 +40,30 @@ namespace Valuator.Pages
             _storage.Store(rankKey, rank);
 
             string similarityKey = "SIMILARITY-" + id;
-            string similarity = GetSimilarity(text).ToString();
 
-            _storage.Store(similarityKey, similarity);
+            if (_storage.IsTextExist(text))
+            {
+                _storage.Store(similarityKey, "1");
+            }
+            else 
+            {
+                string textKey = "TEXT-" + id;
 
-            string textKey = "TEXT-" + id;     
+                _storage.Store(textKey, text);
 
-            _storage.Store(textKey, text);
+                _storage.StoreTextKey(textKey);
+
+                _storage.Store(similarityKey, "0");
+            }
 
             return Redirect($"summary?id={id}");
         }
 
         private double GetRank(string text)
-        {
+        {   
             int lettersCount = text.Count(char.IsLetter);
 
             return Math.Round(((text.Length - lettersCount) / (double)text.Length), 3);
-        }
-
-        private int GetSimilarity(string text)
-        {
-            List<string> keys = _storage.GetKeys();
-
-            foreach (var key in keys)
-            {
-                if (key.Substring(0, 5) == "TEXT-" && _storage.Load(key) == text)
-                {
-                    return 1;
-                }
-            }
-
-            return 0;
         }
     }
 }
