@@ -26,14 +26,14 @@ namespace Valuator
         public void StoreTextKey(string key)
         {
             IDatabase db = _connectionMultiplexer.GetDatabase();
-            db.SetAdd(_textsIdentifiersKey, key);
+            db.ListRightPush(_textsIdentifiersKey, key);
         }
 
         public bool IsTextExist(string text)
         {
             IDatabase db = _connectionMultiplexer.GetDatabase();
 
-            var keys = db.SetMembers(_textsIdentifiersKey);
+            var keys = db.ListRange(_textsIdentifiersKey);
 
             foreach (var key in keys)
             {
@@ -42,7 +42,7 @@ namespace Valuator
                     return true;
                 }
             }
-
+            
             return false;
         }
 
