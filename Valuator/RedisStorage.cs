@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Valuator
 {
@@ -29,21 +30,10 @@ namespace Valuator
             db.ListRightPush(_textsIdentifiersKey, key);
         }
 
-        public bool IsTextExist(string text)
+        public List<string> GetTextsKeys()
         {
             IDatabase db = _connectionMultiplexer.GetDatabase();
-
-            var keys = db.ListRange(_textsIdentifiersKey);
-
-            foreach (var key in keys)
-            {
-                if (Load(key) == text)
-                {
-                    return true;
-                }
-            }
-            
-            return false;
+            return db.ListRange(_textsIdentifiersKey).Select(x => x.ToString()).ToList();
         }
 
         public string Load(string key)

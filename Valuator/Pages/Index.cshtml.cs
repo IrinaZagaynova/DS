@@ -33,27 +33,22 @@ namespace Valuator.Pages
             _logger.LogDebug(text);
 
             string id = Guid.NewGuid().ToString();   
-
+            
             string rankKey = "RANK-" + id;
             string rank = GetRank(text).ToString();
 
             _storage.Store(rankKey, rank);
 
             string similarityKey = "SIMILARITY-" + id;
+            double similarity = GetSimilarity(text);
 
-            if (_storage.IsTextExist(text))
-            {
-                _storage.Store(similarityKey, "1");
-            }
-            else 
+            _storage.Store(similarityKey, similarity.ToString());
+
+            if (similarity == 0)
             {
                 string textKey = "TEXT-" + id;
-
                 _storage.Store(textKey, text);
-
                 _storage.StoreTextKey(textKey);
-
-                _storage.Store(similarityKey, "0");
             }
 
             return Redirect($"summary?id={id}");
@@ -64,6 +59,21 @@ namespace Valuator.Pages
             int lettersCount = text.Count(char.IsLetter);
 
             return Math.Round(((text.Length - lettersCount) / (double)text.Length), 3);
+        }
+
+        private double GetSimilarity(string text)
+        {
+            var keys = _storage.GetTextsKeys();
+            
+            foreach (var key in keys)
+            {
+                if (_storage.Load(key) == text)
+                {
+                    return 1;
+                }
+            }
+
+            return 0;
         }
     }
 }
