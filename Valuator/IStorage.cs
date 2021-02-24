@@ -7,7 +7,7 @@ namespace Valuator
         void Store(string key, string value);
 
         void StoreTextKey(string key);
-        List<string> GetTextsKeys();
+        List<string> GetTextKeys();
 
         string Load(string key);  
     }

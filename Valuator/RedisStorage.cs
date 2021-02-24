@@ -9,7 +9,7 @@ namespace Valuator
     {
         private readonly ILogger<RedisStorage> _logger;
         private readonly IConnectionMultiplexer _connectionMultiplexer;
-        private readonly RedisKey _textsIdentifiersKey = "textsIdentifiers";
+        private readonly RedisKey _textIdentifiersKey = "textIdentifiers";
         private readonly string _host = "localhost";
  
         public RedisStorage(ILogger<RedisStorage> logger)
@@ -27,13 +27,13 @@ namespace Valuator
         public void StoreTextKey(string key)
         {
             IDatabase db = _connectionMultiplexer.GetDatabase();
-            db.ListRightPush(_textsIdentifiersKey, key);
+            db.ListRightPush(_textIdentifiersKey, key);
         }
 
-        public List<string> GetTextsKeys()
+        public List<string> GetTextKeys()
         {
             IDatabase db = _connectionMultiplexer.GetDatabase();
-            return db.ListRange(_textsIdentifiersKey).Select(x => x.ToString()).ToList();
+            return db.ListRange(_textIdentifiersKey).Select(x => x.ToString()).ToList();
         }
 
         public string Load(string key)

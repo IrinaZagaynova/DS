@@ -63,7 +63,7 @@ namespace Valuator.Pages
 
         private double GetSimilarity(string text)
         {
-            var keys = _storage.GetTextsKeys();
+            var keys = _storage.GetTextKeys();
             
             foreach (var key in keys)
             {
