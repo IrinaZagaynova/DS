@@ -38,7 +38,7 @@ namespace Valuator.Pages
                 }
             }
 
-            _logger.LogWarning("RankKey {rankKe} doesn't exists", rankKey);
+            _logger.LogWarning("RankKey {rankKey} doesn't exists", rankKey);
        
         }
     }
