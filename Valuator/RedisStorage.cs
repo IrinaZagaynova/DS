@@ -38,8 +38,19 @@ namespace Valuator
 
         public string Load(string key)
         {
-            IDatabase db = _connectionMultiplexer.GetDatabase();
-            return db.StringGet(key);
+            IDatabase db = _connectionMultiplexer.GetDatabase();        
+            if (db.KeyExists(key))
+            {
+                return db.StringGet(key);
+            }
+            _logger.LogWarning("Key {key} doesn't exists", key);  
+            return string.Empty;
+        }
+
+        public bool IsKeyExist(string key)
+        {
+            IDatabase db = _connectionMultiplexer.GetDatabase();       
+            return db.KeyExists(key);
         }
     }
 }
