@@ -7,7 +7,7 @@ namespace RankCalculator
     {
         static void Main(string[] args)
         {
-            using (var loggerFactory = new LoggerFactory())
+            using (var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug)))
             {
                 var storage = new RedisStorage(loggerFactory.CreateLogger<RedisStorage>());
                 var rankCalculator = new RankCalculator(loggerFactory.CreateLogger<RankCalculator>(), storage);
