@@ -27,11 +27,9 @@ namespace Valuator.Pages
             Similarity = Convert.ToDouble(_storage.Load(similarityKey));
  
             string rankKey = Constants.RankKeyPrefix + id; 
-            int retryCount = 0;  
 
-            while (retryCount < 20)
+            for (int retryCount = 0; retryCount < 20; retryCount++)
             {
-                retryCount++;
                 Thread.Sleep(100);
                 if (_storage.IsKeyExist(rankKey))
                 {
