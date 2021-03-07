@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
@@ -24,13 +25,14 @@ namespace Valuator.Pages
             
             string similarityKey = Constants.SimilarityKeyPrefix + id;
             Similarity = Convert.ToDouble(_storage.Load(similarityKey));
-
+ 
             string rankKey = Constants.RankKeyPrefix + id; 
             int retryCount = 0;  
 
-            while (retryCount < 1000)
+            while (retryCount < 20)
             {
                 retryCount++;
+                Thread.Sleep(100);
                 if (_storage.IsKeyExist(rankKey))
                 {
                     Rank = Convert.ToDouble(_storage.Load(rankKey));
@@ -39,7 +41,7 @@ namespace Valuator.Pages
             }
 
             _logger.LogWarning("RankKey {rankKey} doesn't exists", rankKey);
-       
+
         }
     }
 }
