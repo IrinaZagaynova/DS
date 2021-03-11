@@ -25,7 +25,7 @@ namespace Valuator.Pages
             
         }
 
-        public IActionResult OnPost(string text)
+        public async Task<IActionResult> OnPost(string text)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -45,19 +45,19 @@ namespace Valuator.Pages
             _storage.Store(textKey, text);
             _storage.StoreTextKey(textKey);
 
-            CancellationTokenSource cts = new CancellationTokenSource();
-            Task.Factory.StartNew(() => CalculateAndStoreRank(cts.Token, id), cts.Token);
+            await CreateTaskForRankCalculator(id);
 
             return Redirect($"summary?id={id}");
         }
 
-        static async Task CalculateAndStoreRank(CancellationToken ct, string id)
+        private async Task CreateTaskForRankCalculator(string id)
         {
+            CancellationTokenSource ct = new CancellationTokenSource();
             ConnectionFactory cf = new ConnectionFactory();
 
             using (IConnection c = cf.CreateConnection())
             {
-                while (!ct.IsCancellationRequested)
+                if (!ct.IsCancellationRequested)
                 {
                     byte[] data = Encoding.UTF8.GetBytes(id);
                     c.Publish("valuator.processing.rank", data);
