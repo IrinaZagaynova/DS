@@ -2,8 +2,10 @@ using NATS.Client;
 using System;
 using System.Text;
 using System.Linq;
+using System.Threading.Tasks;
 using Valuator;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace RankCalculator
 {
@@ -11,32 +13,51 @@ namespace RankCalculator
     {
         private readonly IConnection _connection;
         private readonly IAsyncSubscription _subscription;
+        private readonly IStorage _storage;
         private readonly ILogger<RankCalculator> _logger;
         
         public RankCalculator(ILogger<RankCalculator> logger, IStorage storage)
         {
             _logger = logger;
+            _storage = storage;
             _connection = new ConnectionFactory().CreateConnection();
+            _subscription = GetSubscription();
+        }
 
-            _subscription = _connection.SubscribeAsync("valuator.processing.rank", "rank_calculator", (sender, args) =>
+        private IAsyncSubscription GetSubscription()
+        {   
+            EventHandler<MsgHandlerEventArgs> msgHandler = async (sender, args) =>
             {
                 string id = Encoding.UTF8.GetString(args.Message.Data);
                 string textKey = Constants.TextKeyPrefix + id;
 
-                if (!storage.IsKeyExist(textKey))
+                if (!_storage.IsKeyExist(textKey))
                 {
-                    logger.LogWarning("Text key {textKey} doesn't exists", textKey);
+                    _logger.LogWarning("Text key {textKey} doesn't exists", textKey);
                     return;
                 }
 
-                string text = storage.Load(textKey);
+                string text = _storage.Load(textKey);
                 string rankKey = Constants.RankKeyPrefix + id;
-                string rank = GetRank(text).ToString();
+                double rank = GetRank(text);
 
-                logger.LogDebug("Rank {rank} with key {rankKey} by text id {id}", rank, rankKey, id);
+                _logger.LogDebug("Rank {rank} with key {rankKey} by text id {id}", rank.ToString(), rankKey, id);
                 
-                storage.Store(rankKey, rank);
-            });
+                _storage.Store(rankKey, rank.ToString());
+
+                RankMessage rankMessage = new RankMessage(id, rank);
+                await SentMessageToEventLogger(rankMessage);
+            };
+
+            return _connection.SubscribeAsync("valuator.processing.rank", "rank_calculator", (msgHandler));
+        }
+    
+        private async Task SentMessageToEventLogger(RankMessage rankMsg)
+        {            
+            var data = JsonSerializer.Serialize(rankMsg);
+            _connection.Publish("rankCalculator.logging.rank", Encoding.UTF8.GetBytes(data));
+            await Task.Delay(1000);
+            _connection.Flush();
         }
 
         public void Run()
