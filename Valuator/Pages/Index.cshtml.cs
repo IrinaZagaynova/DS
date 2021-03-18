@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -59,19 +60,23 @@ namespace Valuator.Pages
             {
                 byte[] data = Encoding.UTF8.GetBytes(id);
                 c.Publish("valuator.processing.rank", data);    
-                await Task.Delay(1000);        
+
+                await Task.Delay(1000);  
+     
                 c.Drain();
                 c.Close();
             }
         }
 
-        private async Task SentMessageToEventLogger(SimilarityMessage similarityMessage)
+        private async Task SentMessageToEventLogger(SimilarityMessage similarityMsg)
         {
             using (IConnection c = new ConnectionFactory().CreateConnection())
             {
-                var data = JsonSerializer.Serialize(similarityMessage);
+                var data = JsonSerializer.Serialize(similarityMsg);
                 c.Publish("valuator.logging.similarity", Encoding.UTF8.GetBytes(data));
+
                 await Task.Delay(1000);
+
                 c.Drain();
                 c.Close();
             }
