@@ -54,10 +54,15 @@ namespace RankCalculator
     
         private async Task SentMessageToEventLogger(RankMessage rankMsg)
         {            
-            var data = JsonSerializer.Serialize(rankMsg);
-            _connection.Publish("rankCalculator.logging.rank", Encoding.UTF8.GetBytes(data));
-            await Task.Delay(1000);
-            _connection.Flush();
+            using (IConnection c = new ConnectionFactory().CreateConnection())
+            {
+                var data = JsonSerializer.Serialize(rankMsg);
+                c.Publish("rankCalculator.logging.rank", Encoding.UTF8.GetBytes(data));
+                await Task.Delay(1000);
+
+                c.Drain();
+                c.Close();
+            }
         }
 
         public void Run()
