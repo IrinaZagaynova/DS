@@ -1,4 +1,5 @@
-namespace EventsData
+﻿
+namespace Common
 {
     public struct RankMessage
     {
