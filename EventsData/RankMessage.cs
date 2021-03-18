@@ -1,4 +1,4 @@
-namespace RankCalculator
+namespace EventsData
 {
     public struct RankMessage
     {

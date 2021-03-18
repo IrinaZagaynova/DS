@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Valuator\Valuator.csproj" />
+    <ProjectReference Include="..\EventsData\EventsData.csproj" />
   </ItemGroup>
 
 </Project>

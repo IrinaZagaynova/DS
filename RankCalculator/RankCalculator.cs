@@ -1,3 +1,4 @@
+using EventsData;
 using NATS.Client;
 using System;
 using System.Text;

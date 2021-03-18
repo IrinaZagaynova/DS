@@ -1,10 +1,9 @@
+using EventsData;
 using NATS.Client;
 using System;
 using System.Text;
 using System.Linq;
 using System.Text.Json;
-using RankCalculator;
-using Valuator;
 
 namespace EventsLogger
 {

@@ -1,4 +1,4 @@
-namespace Valuator
+namespace EventsData
 {
     public struct SimilarityMessage
     {
