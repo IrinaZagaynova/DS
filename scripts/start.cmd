@@ -10,4 +10,5 @@ start /d%VALUATOR_PATH% dotnet run --no-build --urls "http://localhost:5002"
 start /d%RANK_CALCULATOR_PATH% dotnet run --no-build
 start /d%RANK_CALCULATOR_PATH% dotnet run --no-build
 start /d%EVENTS_LOGGER_PATH% dotnet run --no-build
+start /d%EVENTS_LOGGER_PATH% dotnet run --no-build
 start /d%NGINX_PATH% nginx.exe
