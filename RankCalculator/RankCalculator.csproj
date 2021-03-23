@@ -15,7 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Storage\Storage.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\EventsLogger\EventsLogger.csproj" />
   </ItemGroup>
 
 </Project>
