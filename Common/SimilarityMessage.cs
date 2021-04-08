@@ -1,5 +1,8 @@
+using System;
+
 namespace Common
 {
+    [Serializable]
     public struct SimilarityMessage
     {
         public string Id { get; set; }

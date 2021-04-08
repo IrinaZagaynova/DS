@@ -4,10 +4,12 @@ namespace Storage
 {
     public interface IStorage
     {
-        void Store(string key, string value);
-        void StoreTextKey(string key);
-        List<string> GetTextKeys();
-        string Load(string key);  
-        bool IsKeyExist(string key);
+        void StoreShardKey(string id, string shardKey);
+        void Store(string shardKey, string key, string value);
+        void StoreToSet(string setIdentifier, string shardKey, string value);
+        string Load(string shardKey, string key);  
+        bool IsValueExistInSet(string setIdentifier, string shardKey, string value);
+        bool IsKeyExist(string shardKey, string key);
+        string GetShardKey(string id);
     }
 }

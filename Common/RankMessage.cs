@@ -1,6 +1,9 @@
 ﻿
+using System;
+
 namespace Common
 {
+    [Serializable]
     public struct RankMessage
     {
         public string Id { get; set; }

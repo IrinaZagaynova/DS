@@ -22,22 +22,24 @@ namespace Valuator.Pages
         public double Similarity { get; set; }
 
         public void OnGet(string id)
-        {           
-            _logger.LogDebug(id);
-            
-            string similarityKey = Constants.SimilarityKeyPrefix + id;
-            Similarity = Convert.ToDouble(_storage.Load(similarityKey));
- 
-            string rankKey = Constants.RankKeyPrefix + id; 
+        {                    
+            string shardKey = _storage.GetShardKey(id);           
 
+            _logger.LogDebug("LOOKUP: {id}, {shardKey}", id, shardKey);
+
+            string rankKey = Constants.RankKeyPrefix + id; 
+            string similarityKey = Constants.SimilarityKeyPrefix + id;
+
+            Similarity = Convert.ToDouble(_storage.Load(shardKey, similarityKey));
+ 
             for (int retryCount = 0; retryCount < 20; retryCount++)
             {
-                Thread.Sleep(100);
-                if (_storage.IsKeyExist(rankKey))
+                if (_storage.IsKeyExist(shardKey, rankKey))
                 {
-                    Rank = Convert.ToDouble(_storage.Load(rankKey));
+                    Rank = Convert.ToDouble(_storage.Load(shardKey, rankKey));
                     return;
                 }
+                Thread.Sleep(100);
             }
 
             _logger.LogWarning("RankKey {rankKey} doesn't exists", rankKey);

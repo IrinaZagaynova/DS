@@ -1,5 +1,5 @@
-using Common;
 using Storage;
+using Common;
 using NATS.Client;
 using System;
 using System.Text;
@@ -31,20 +31,23 @@ namespace RankCalculator
             {
                 string id = Encoding.UTF8.GetString(args.Message.Data);
                 string textKey = Constants.TextKeyPrefix + id;
+                string shardKey = _storage.GetShardKey(id);
 
-                if (!_storage.IsKeyExist(textKey))
+                _logger.LogDebug("LOOKUP: {id}, {shardKey}", id, shardKey);
+
+                if (!_storage.IsKeyExist(shardKey, textKey))
                 {
                     _logger.LogWarning("Text key {textKey} doesn't exists", textKey);
                     return;
                 }
-
-                string text = _storage.Load(textKey);
+          
+                string text = _storage.Load(shardKey, textKey);
                 string rankKey = Constants.RankKeyPrefix + id;
                 double rank = GetRank(text);
 
                 _logger.LogDebug("Rank {rank} with key {rankKey} by text id {id}", rank.ToString(), rankKey, id);
                 
-                _storage.Store(rankKey, rank.ToString());
+                _storage.Store(shardKey, rankKey, rank.ToString());
 
                 RankMessage rankMessage = new RankMessage(id, rank);
                 await SentMessageToEventLogger(rankMessage);
@@ -59,7 +62,8 @@ namespace RankCalculator
             {
                 var data = JsonSerializer.Serialize(rankMsg);
                 c.Publish("rankCalculator.logging.rank", Encoding.UTF8.GetBytes(data));
-                await Task.Delay(1000);
+
+                await Task.Delay(100);  
 
                 c.Drain();
                 c.Close();

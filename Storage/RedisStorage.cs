@@ -1,7 +1,8 @@
-using Microsoft.Extensions.Logging;
-using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace Storage
 {
@@ -11,46 +12,73 @@ namespace Storage
         private readonly IConnectionMultiplexer _connectionMultiplexer;
         private readonly RedisKey _textIdentifiersKey = "textIdentifiers";
         private readonly string _host = "localhost";
+        private Dictionary<string, IConnectionMultiplexer> _shartsConnectionMultiplexers;
  
         public RedisStorage(ILogger<RedisStorage> logger)
         {
             _logger = logger;
             _connectionMultiplexer = ConnectionMultiplexer.Connect(_host);
+            _shartsConnectionMultiplexers = new Dictionary<string, IConnectionMultiplexer>()
+            {
+                { Constants.RusShardKey, ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("DB_RUS", EnvironmentVariableTarget.User)) },
+                { Constants.EuShardKey, ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("DB_EU", EnvironmentVariableTarget.User)) },
+                { Constants.OtherShardKey, ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("DB_OTHER", EnvironmentVariableTarget.User)) }
+            };
         }
 
-        public void Store(string key, string value)
+        public void StoreShardKey(string id, string shardKey)
         {
             IDatabase db = _connectionMultiplexer.GetDatabase();
+            db.StringSet(id, shardKey);
+        }
+
+        public void Store(string shardKey, string key, string value)
+        {
+            IDatabase db = GetConnectionMultiplexer(shardKey).GetDatabase();
             db.StringSet(key, value);
         }
 
-        public void StoreTextKey(string key)
+        public void StoreToSet(string setIdentifier, string shardKey, string value)
         {
-            IDatabase db = _connectionMultiplexer.GetDatabase();
-            db.ListRightPush(_textIdentifiersKey, key);
+            IDatabase db = GetConnectionMultiplexer(shardKey).GetDatabase();
+            db.SetAdd(setIdentifier, value);
         }
 
-        public List<string> GetTextKeys()
+        public string Load(string shardKey, string key)
         {
-            IDatabase db = _connectionMultiplexer.GetDatabase();
-            return db.ListRange(_textIdentifiersKey).Select(x => x.ToString()).ToList();
+            IDatabase db = GetConnectionMultiplexer(shardKey).GetDatabase();       
+            return db.StringGet(key); 
         }
 
-        public string Load(string key)
+        public bool IsValueExistInSet(string setIdentifier, string shardKey, string value)
         {
-            IDatabase db = _connectionMultiplexer.GetDatabase();        
-            if (db.KeyExists(key))
-            {
-                return db.StringGet(key);
-            }
-            _logger.LogWarning("Key {key} doesn't exists", key);  
-            return string.Empty;
+            IDatabase db = GetConnectionMultiplexer(shardKey).GetDatabase();   
+            return db.SetContains(setIdentifier, value);
         }
 
-        public bool IsKeyExist(string key)
+        public bool IsKeyExist(string shardKey, string key)
         {
-            IDatabase db = _connectionMultiplexer.GetDatabase();       
+            IDatabase db = GetConnectionMultiplexer(shardKey).GetDatabase();       
             return db.KeyExists(key);
+        }
+
+        public string GetShardKey(string id)
+        {
+            IDatabase db = _connectionMultiplexer.GetDatabase();     
+            return db.StringGet(id);
+        }
+
+        private IConnectionMultiplexer GetConnectionMultiplexer(string shardKey)
+        {
+            IConnectionMultiplexer connectionMultiplexer;
+            if (_shartsConnectionMultiplexers.TryGetValue(shardKey, out connectionMultiplexer))
+            {
+                IDatabase db = connectionMultiplexer.GetDatabase();
+                return connectionMultiplexer;
+            }
+
+            _logger.LogWarning("Shard key {shardKey} doesn't exists", shardKey);
+            return _connectionMultiplexer;
         }
     }
 }

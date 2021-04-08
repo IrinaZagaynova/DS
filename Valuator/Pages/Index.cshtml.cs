@@ -27,25 +27,26 @@ namespace Valuator.Pages
             
         }
 
-        public async Task<IActionResult> OnPost(string text)
+        public async Task<IActionResult> OnPost(string text, string shardKey)
         {
             if (string.IsNullOrEmpty(text))
             {
                 return Redirect("/");
             }
+       
+            string id = Guid.NewGuid().ToString();
 
-            _logger.LogDebug(text);
+            _storage.StoreShardKey(id, shardKey); 
 
-            string id = Guid.NewGuid().ToString();   
+            _logger.LogDebug("LOOKUP: {id}, {shardKey}", id, shardKey);
+        
             string textKey = Constants.TextKeyPrefix + id;
-
             string similarityKey = Constants.SimilarityKeyPrefix + id;
             double similarity = GetSimilarity(text);
 
-            _storage.Store(similarityKey, similarity.ToString());
-
-            _storage.Store(textKey, text);
-            _storage.StoreTextKey(textKey);
+            _storage.Store(shardKey, similarityKey, similarity.ToString());
+            _storage.Store(shardKey, textKey, text);
+            _storage.StoreToSet(Constants.textsSetKey, shardKey, text);
 
             await CreateTaskForRankCalculator(id);
 
@@ -62,7 +63,7 @@ namespace Valuator.Pages
                 byte[] data = Encoding.UTF8.GetBytes(id);
                 c.Publish("valuator.processing.rank", data);    
 
-                await Task.Delay(1000);  
+                await Task.Delay(100);  
      
                 c.Drain();
                 c.Close();
@@ -76,7 +77,7 @@ namespace Valuator.Pages
                 var data = JsonSerializer.Serialize(similarityMsg);
                 c.Publish("valuator.logging.similarity", Encoding.UTF8.GetBytes(data));
 
-                await Task.Delay(1000);
+                await Task.Delay(100);  
 
                 c.Drain();
                 c.Close();
@@ -85,17 +86,9 @@ namespace Valuator.Pages
 
         private double GetSimilarity(string text)
         {
-            var keys = _storage.GetTextKeys();
-            
-            foreach (var key in keys)
-            {
-                if (_storage.Load(key) == text)
-                {
-                    return 1;
-                }
-            }
-
-            return 0;
+            return (_storage.IsValueExistInSet(Constants.textsSetKey, Constants.RusShardKey, text) || 
+            _storage.IsValueExistInSet(Constants.textsSetKey, Constants.EuShardKey, text) ||
+            _storage.IsValueExistInSet(Constants.textsSetKey, Constants.OtherShardKey, text)) ? 1 : 0;
         }
     }
 }
