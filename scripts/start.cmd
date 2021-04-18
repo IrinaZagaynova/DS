@@ -5,9 +5,9 @@ SET RANK_CALCULATOR_PATH=%~dp0..\RankCalculator\
 SET EVENTS_LOGGER_PATH=%~dp0..\EventsLogger\
 SET NGINX_PATH=%~dp0..\nginx\
 
-start /d%VALUATOR_PATH% dotnet build
-start /d%RANK_CALCULATOR_PATH% dotnet build
-start /d%EVENTS_LOGGER_PATH% dotnet build
+/d%VALUATOR_PATH% dotnet build
+/d%RANK_CALCULATOR_PATH% dotnet build
+/d%EVENTS_LOGGER_PATH% dotnet build
 
 start /d%VALUATOR_PATH% dotnet run --no-build --urls "http://localhost:5001"
 start /d%VALUATOR_PATH% dotnet run --no-build --urls "http://localhost:5002"
