@@ -18,4 +18,4 @@ start /d %RANK_CALCULATOR_PATH% dotnet run --no-build
 start /d %EVENTS_LOGGER_PATH% dotnet run --no-build
 start /d %EVENTS_LOGGER_PATH% dotnet run --no-build
 
-start /d%NGINX_PATH% nginx.exe
+start /d %NGINX_PATH% nginx.exe
