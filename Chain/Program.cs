@@ -89,13 +89,7 @@ namespace Chain
             {   
                 throw new Exception("Can not connect to socket");
             }                    
-        }
-
-        static string GenerateNumberStr()
-        {
-            Random random = new Random();
-            return random.Next(0, 100).ToString();
-        }
+        } 
 
         private static void WorkAsInitiator()
         {
